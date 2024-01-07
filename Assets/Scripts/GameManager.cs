@@ -1,31 +1,40 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class MainManager : MonoBehaviour
+public class GameManager : MonoBehaviour
 {
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text NameText;
     public GameObject GameOverText;
-    
-    private bool m_Started = false;
-    private int m_Points;
-    
-    private bool m_GameOver = false;
+    public GameUIHandler GameUIHandler;
 
+    private bool m_Started = false;
+    private bool m_GameOver = false;
+    public int m_Points;
     
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
+        //If there is a SaveInfo instance from menu screen set the player name to CurrentPlayer var
+        if (SaveInfo.Instance != null)
+        {
+            NameText.text = SaveInfo.Instance.CurrentPlayer;
+        }
+        else
+        //otherwise name the player N/A if skipped the menu screen
+        {
+            NameText.text = "N/A";
+        }
+
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
-        int[] pointCountArray = new [] {1,1,2,2,5,5};
+
+        int[] pointCountArray = new[] { 1, 1, 2, 2, 5, 5 };
         for (int i = 0; i < LineCount; ++i)
         {
             for (int x = 0; x < perLine; ++x)
@@ -62,7 +71,7 @@ public class MainManager : MonoBehaviour
         }
     }
 
-    void AddPoint(int point)
+    private void AddPoint(int point)
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
@@ -70,7 +79,31 @@ public class MainManager : MonoBehaviour
 
     public void GameOver()
     {
+        //If current points are greater than the HiScore replace the HiScorePlayer and HiScore in the SaveInfo script with current info
+        if (SaveInfo.Instance != null)
+        {
+            if (m_Points > SaveInfo.Instance.HiScore)
+            {
+                SaveInfo.Instance.HiScore = m_Points;
+                SaveInfo.Instance.HiScorePlayer = SaveInfo.Instance.CurrentPlayer;
+
+                //Runs method from GameUIHandler script to update the HiScore text box
+                GameUIHandler.UpdateHiScore();
+
+                //Runs method to save the new name and score to JSON
+                SaveInfo.Instance.SaveName();
+            }
+        }
+        //Runs method from GameUIHandler script to update the HiScore text box
+        GameUIHandler.UpdateHiScore();
+
         m_GameOver = true;
         GameOverText.SetActive(true);
     }
+
+    private void ExitToMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
+
 }
