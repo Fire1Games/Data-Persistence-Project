@@ -6,11 +6,12 @@ using System;
 using UnityEditor;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using JetBrains.Annotations;
+
 
 public class SaveInfo : MonoBehaviour
 {
     public MenuUIHandler MenuUIHandler;
+
     //can access this script from any other scripts
     public static SaveInfo Instance;
 
